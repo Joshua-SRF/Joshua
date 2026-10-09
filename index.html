@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Analyzer</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #000000;
+            color: #f2f2f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 16px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding-top: 12px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #e1306c, #a259e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: #8a8a93;
+            font-size: 0.9rem;
+            margin-top: 6px;
+        }
+
+        .card {
+            background-color: #16161b;
+            border: 1px solid #2a2a31;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #8a8a93;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            background-color: #000000;
+            border: 1px solid #2a2a31;
+            border-radius: 10px;
+            padding: 14px 16px;
+            color: #f2f2f5;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #e1306c;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(135deg, #e1306c, #a259e1);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-submit:hover {
+            opacity: 0.9;
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status-box {
+            display: none;
+            text-align: center;
+            padding: 16px;
+            border-radius: 12px;
+            background-color: #16161b;
+            border: 1px solid #2a2a31;
+            margin-bottom: 20px;
+        }
+
+        .status-box.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid #e1306c;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 12px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-text {
+            font-size: 0.95rem;
+            color: #8a8a93;
+        }
+
+        .tabs {
+            display: flex;
+            overflow-x: auto;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding-bottom: 4px;
+            scrollbar-width: none;
+        }
+
+        .tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-btn {
+            background-color: #16161b;
+            border: 1px solid #2a2a31;
+            color: #8a8a93;
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #e1306c, #a259e1);
+            color: #ffffff;
+            border-color: transparent;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .metric-card {
+            background-color: #16161b;
+            border: 1px solid #2a2a31;
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #f2f2f5;
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: #8a8a93;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .user-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .user-item {
+            background-color: #16161b;
+            border: 1px solid #2a2a31;
+            border-radius: 10px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            text-decoration: none;
+            color: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .user-item:hover {
+            border-color: #e1306c;
+        }
+
+        .user-handle {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #f2f2f5;
+        }
+
+        .deeplink-badge {
+            font-size: 0.75rem;
+            color: #e1306c;
+            background: rgba(225, 48, 108, 0.1);
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(225, 48, 108, 0.2);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 32px 16px;
+            color: #8a8a93;
+            font-size: 0.9rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><span class="gradient-text">Social Analyzer</span></h1>
+            <p class="subtitle">24/7 Server-Driven Instagram Intelligence</p>
+        </header>
+
+        <div class="card" id="search-card">
+            <form id="analyze-form">
+                <div class="form-group">
+                    <label for="username-input">Instagram Username</label>
+                    <input type="text" id="username-input" placeholder="e.g. instagram" required autocomplete="off" autocapitalize="none">
+                    <button type="submit" id="submit-btn" class="btn-submit">
+                        <span>Analyze Profile</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div id="status-container" class="status-box">
+            <div class="spinner"></div>
+            <p id="status-message" class="status-text">Submitting scan request...</p>
+        </div>
+
+        <div id="results-container" class="hidden">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value" id="count-nonfollowers">0</div>
+                    <div class="metric-label">Non-Followers</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="count-fans">0</div>
+                    <div class="metric-label">Fans</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="count-mutuals">0</div>
+                    <div class="metric-label">Mutuals</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="count-followers">0</div>
+                    <div class="metric-label">Total Followers</div>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="non_followers">Non-Followers</button>
+                <button class="tab-btn" data-tab="fans">Fans</button>
+                <button class="tab-btn" data-tab="mutuals">Mutuals</button>
+                <button class="tab-btn" data-tab="followers">Followers</button>
+                <button class="tab-btn" data-tab="following">Following</button>
+            </div>
+
+            <div class="card">
+                <div id="user-list-container" class="user-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 🔑 CONFIGURATION PANE (FILL OUT MANUALLY)
+        // ==========================================
+        const SUPABASE_URL = "https://supabase.co";
+        const SUPABASE_ANON = "PASTE_YOUR_ANON_PUBLIC_KEY_HERE";
+        const SYSTEM_WHITELIST = ["joshfz"];
+        // ==========================================
+
+        // Exact variable tracking array mappings preserving original framework
+        let baseUrl = SUPABASE_URL;
+        let currentData = null;
+        let currentTab = "non_followers";
+        let token = SUPABASE_ANON;
+        let username = "";
+        let mine = [];
+        let whitelist = SYSTEM_WHITELIST;
+
+        // Safe helper definitions declared at top of script to prevent runtime crash
+        function escapeHtml(str) {
+            if (!str) return "";
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // DOM elements
+        const analyzeForm = document.getElementById("analyze-form");
+        const usernameInput = document.getElementById("username-input");
+        const submitBtn = document.getElementById("submit-btn");
+        const statusContainer = document.getElementById("status-container");
+        const statusMessage = document.getElementById("status-message");
+        const resultsContainer = document.getElementById("results-container");
+        const userListContainer = document.getElementById("user-list-container");
+
+        let pollInterval = null;
+
+        // Strict Whitelist / Exclusion Guard function
+        function filterUserList(list, targetUsername) {
+            if (!Array.isArray(list)) return [];
+            const targetLower = (targetUsername || "").toLowerCase();
+            const whitelistLower = SYSTEM_WHITELIST.map(w => (w || "").toLowerCase());
+
+            return list.filter(item => {
+                const handle = typeof item === "string" ? item : (item.username || item.handle || "");
+                const handleLower = handle.toLowerCase();
+
+                // If handle is in SYSTEM_WHITELIST, only allow if it is the target account running the scan
+                if (whitelistLower.includes(handleLower)) {
+                    return handleLower === targetLower;
+                }
+                return true;
+            });
+        }
+
+        // Form Submission Event Listener
+        analyzeForm.addEventListener("submit", function(e) {
+            e.preventDefault(); // Explicitly prevent form default reset/reload loop
+
+            const targetUser = usernameInput.value.trim().replace(/^@/, "");
+            if (!targetUser) return;
+
+            username = targetUser;
+            submitBtn.disabled = true;
+            statusContainer.classList.add("active");
+            statusMessage.textContent = "Connecting to Supabase queue...";
+            resultsContainer.classList.add("hidden");
+
+            if (pollInterval) clearInterval(pollInterval);
+
+            // Create job directly in Supabase
+            fetch(`${SUPABASE_URL}/rest/v1/jobs`, {
+                method: "POST",
+                headers: {
+                    "apikey": SUPABASE_ANON,
+                    "Authorization": `Bearer ${SUPABASE_ANON}`,
+                    "Content-Type": "application/json",
+                    "Prefer": "return=representation"
+                },
+                body: JSON.stringify({
+                    target_username: username,
+                    status: "pending",
+                    created_at: new Date().toISOString()
+                })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
+                return res.json();
+            })
+            .then(data => {
+                // Correctly index array envelope data[0]
+                const job = (Array.isArray(data) && data.length > 0) ? data[0] : data;
+                const jobId = job.id;
+                statusMessage.textContent = "Job queued. Waiting for background worker...";
+
+                // Start polling every 3 seconds
+                pollInterval = setInterval(() => pollJobStatus(jobId), 3000);
+            })
+            .catch(err => {
+                console.error("Submission error:", err);
+                statusMessage.textContent = `Error submitting scan: ${err.message}`;
+                submitBtn.disabled = false;
+            });
+        });
+
+        function pollJobStatus(jobId) {
+            fetch(`${SUPABASE_URL}/rest/v1/jobs?id=eq.${jobId}`, {
+                method: "GET",
+                headers: {
+                    "apikey": SUPABASE_ANON,
+                    "Authorization": `Bearer ${SUPABASE_ANON}`,
+                    "Accept": "application/json"
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                // Check envelope data[0]
+                const job = (Array.isArray(data) && data.length > 0) ? data[0] : null;
+                if (!job) return;
+
+                if (job.status === "processing") {
+                    statusMessage.textContent = "Worker processing Instagram data...";
+                } else if (job.status === "done" && job.result) {
+                    clearInterval(pollInterval);
+                    statusContainer.classList.remove("active");
+                    submitBtn.disabled = false;
+                    processAndDisplayResults(job.result);
+                } else if (job.status === "error") {
+                    clearInterval(pollInterval);
+                    statusMessage.textContent = `Scan failed: ${job.error || "Unknown worker error"}`;
+                    submitBtn.disabled = false;
+                }
+            })
+            .catch(err => {
+                console.error("Polling error:", err);
+            });
+        }
+
+        function processAndDisplayResults(rawPayload) {
+            // Apply filtering guard across all data arrays
+            const filteredFollowers = filterUserList(rawPayload.followers || [], username);
+            const filteredFollowing = filterUserList(rawPayload.following || [], username);
+            const filteredNonFollowers = filterUserList(rawPayload.non_followers || [], username);
+            const filteredFans = filterUserList(rawPayload.fans || [], username);
+            const filteredMutuals = filterUserList(rawPayload.mutuals || [], username);
+
+            currentData = {
+                followers: filteredFollowers,
+                following: filteredFollowing,
+                non_followers: filteredNonFollowers,
+                fans: filteredFans,
+                mutuals: filteredMutuals
+            };
+
+            // Update counter metrics
+            document.getElementById("count-nonfollowers").textContent = filteredNonFollowers.length;
+            document.getElementById("count-fans").textContent = filteredFans.length;
+            document.getElementById("count-mutuals").textContent = filteredMutuals.length;
+            document.getElementById("count-followers").textContent = filteredFollowers.length;
+
+            resultsContainer.classList.remove("hidden");
+            renderTabContent(currentTab);
+        }
+
+        // Tab Event Listeners
+        document.querySelectorAll(".tab-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                currentTab = btn.getAttribute("data-tab");
+                renderTabContent(currentTab);
+            });
+        });
+
+        function renderTabContent(tabKey) {
+            if (!currentData || !currentData[tabKey]) {
+                userListContainer.innerHTML = `<div class="empty-state">No data available</div>`;
+                return;
+            }
+
+            const list = currentData[tabKey];
+            if (list.length === 0) {
+                userListContainer.innerHTML = `<div class="empty-state">No profiles found in this category.</div>`;
+                return;
+            }
+
+            userListContainer.innerHTML = list.map(item => {
+                const handle = typeof item === "string" ? item : (item.username || item.handle || "");
+                const safeHandle = escapeHtml(handle);
+                // Native mobile app deep-linking protocol
+                const deepLinkUrl = `instagram://user?username=${encodeURIComponent(handle)}`;
+
+                return `
+                    <a href="${deepLinkUrl}" class="user-item" target="_blank" rel="noopener noreferrer">
+                        <span class="user-handle">@${safeHandle}</span>
+                        <span class="deeplink-badge">Open App ↗</span>
+                    </a>
+                `;
+            }).join("");
+        }
+    </script>
+</body>
+</html>
